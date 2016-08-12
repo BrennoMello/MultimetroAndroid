@@ -6,6 +6,8 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -14,6 +16,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.QuickContactBadge;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,41 +31,80 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import ifba.multimetro.R;
+import ifba.multimetro.bluetooth.ConectaBluetooth;
 import ifba.multimetro.bluetooth.ConnectedThread;
 
 public class FluxoBluetooth extends AppCompatActivity {
 
-    String address = null;
+    private String address = null;
     private ProgressDialog progress;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    BluetoothAdapter myBluetooth = null;
-    BluetoothSocket btSocket = null;
+    private BluetoothAdapter myBluetooth = null;
+    private BluetoothSocket btSocket = null;
     private boolean isBtConnected = false;
-    private Button atualizar;
-    private EditText textoLog;
-    private ConnectedThread connectedThreade;
+    private TextView leitura;
+    private ImageView ohm;
+    private ImageView corrente;
+    private ImageView tensao;
+    //private Button atualizar;
+    //private EditText textoLog;
+    private ConectaBluetooth conectaBluetooth;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         Intent intent = getIntent();
         address = intent.getStringExtra(DeviceList.EXTRA_ADDRESS);
 
         setContentView(R.layout.activity_fluxo_bluetooth);
 
-        TextView textView = (TextView) findViewById(R.id.textView);
-        textView.setText(address);
+        leitura = (TextView) findViewById(R.id.leitura);
+        ohm = (ImageView) findViewById(R.id.ohm);
+        corrente = (ImageView) findViewById(R.id.corrente);
+        tensao = (ImageView) findViewById(R.id.tensao);
 
-        atualizar = (Button) findViewById(R.id.button2);
-        textoLog =(EditText) findViewById(R.id.editText);
+        //atualizar = (Button) findViewById(R.id.button2);
+        //textoLog =(EditText) findViewById(R.id.editText);
 
-        new ConectaBluetooth().execute();
+        conectaBluetooth = new ConectaBluetooth(this);
+        conectaBluetooth.setAddress(address);
+        conectaBluetooth.execute();
 
+        ohm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                conectaBluetooth.getConnectedThreade().write("R");
+                Log.v("FluxoBluetooth", "Escrevendo Bytes");
+            }
+        });
 
+        tensao.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                conectaBluetooth.getConnectedThreade().write("T");
+            }
+        });
 
+        corrente.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                conectaBluetooth.getConnectedThreade().write("C");
+
+            }
+        });
+
+        /*
+        if(conectaBluetooth.isBtConnected()){
+            connectedThreade = new ConnectedThread(conectaBluetooth.getBtSocket(),this);
+            connectedThreade.start();
+        }
+        */
+
+        /*
         atualizar.setOnClickListener(new View.OnClickListener() {
                                          @Override
                                          public void onClick(View v) {
@@ -72,9 +115,11 @@ public class FluxoBluetooth extends AppCompatActivity {
 
 
         );
-
+        */
 
     }
+
+
 
     private void atualizarLed(){
 
@@ -114,145 +159,10 @@ public class FluxoBluetooth extends AppCompatActivity {
     }
 
 
-    private class ConectaBluetooth extends AsyncTask<Void,Void,Void>{
-
-        private boolean ConnectSuccess = true; //if it's here, it's almost connected
-
-        protected void onPreExecute()
-        {
-            progress = ProgressDialog.show(FluxoBluetooth.this, "Conectando...", "Aguarde!!!");  //show a progress dialog
-        }
-
-        @Override
-        protected Void doInBackground(Void... devices) //while the progress dialog is shown, the connection is done in background
-        {
-            try
-            {
-                if (btSocket == null || !isBtConnected)
-                {
-                    myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
-                    BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(address);//connects to the device's address and checks if it's available
-                    btSocket = dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID);//create a RFCOMM (SPP) connection
-                    BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-                    btSocket.connect();//start connection
-                }
-            }
-            catch (IOException e)
-            {
-                //msg("Erro ao conectar "+e.getMessage());
-                Log.v("ERRO conecta bluetooth", e.getMessage());
-                ConnectSuccess = false;//if the try failed, you can check the exception here
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result) //after the doInBackground, it checks if everything went fine
-        {
-            super.onPostExecute(result);
-
-            if (!ConnectSuccess)
-            {
-                msg("Conexão falhou. Tente novamente");
-                finish();
-            }
-            else
-            {
-                msg("Conectado");
-                isBtConnected = true;
-                new ConnectedThread(btSocket).start();
-            }
-            progress.dismiss();
-        }
-
-
-
-
-    }
-
     // fast way to call Toast
     private void msg(String s)
     {
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
-    }
-
-
-
-    public class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-        private String msg;
-        Charset charset = Charset.forName("US-ASCII");
-
-
-
-        public ConnectedThread(BluetoothSocket socket) {
-
-            mmSocket = socket;
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
-
-            // Get the input and output streams, using temp objects because
-            // member streams are final
-            try {
-                tmpIn = socket.getInputStream();
-                tmpOut = socket.getOutputStream();
-            } catch (IOException e) {
-
-                Log.v("ERRO ConnectedThread", e.getMessage());
-
-            }
-
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
-        }
-
-        public void run() {
-            byte[] buffer;  // buffer store for the stream
-            int bytes=0; // bytes returned from read()
-            Charset charset = Charset.forName("US-ASCII");
-            //Charset charset = StandardCharsets.US_ASCII;
-            // Keep listening to the InputStream until an exception occurs
-            while (true) {
-                try {
-                    int num = mmInStream.available();
-                    Log.i("Dados", String.valueOf(num));
-                    buffer = new byte[num];
-
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer, 0, num);
-
-                    // Send the obtained bytes to the UI activity
-
-                    msg = new String(buffer);
-                    FluxoBluetooth.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            textoLog.setText(msg.trim());
-                        }
-                    });
-
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    Log.i("ERRO: ",e.getMessage());
-                    //break;
-                }
-            }
-        }
-
-        /* Call this from the main activity to send data to the remote device */
-        public void write(byte[] bytes) {
-            try {
-                mmOutStream.write(bytes);
-            } catch (IOException e) { }
-        }
-
-        /* Call this from the main activity to shutdown the connection */
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) { }
-        }
     }
 
 

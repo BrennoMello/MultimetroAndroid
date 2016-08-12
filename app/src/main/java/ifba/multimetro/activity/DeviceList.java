@@ -1,8 +1,10 @@
 package ifba.multimetro.activity;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,18 +18,23 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import ifba.multimetro.R;
+import ifba.multimetro.adapter.ConexaoBluetoothAdapter;
 
 public class DeviceList extends AppCompatActivity {
 
-    Button btConecta;
-    ListView listaDispositivos;
+    private Button btConecta;
+    private Button btBuscar;
+    private Spinner comboBox;
+    //ListView listaDispositivos;
     private BluetoothAdapter myBluetooth = null;
     private Set<BluetoothDevice> pairedDevices;
     public static String EXTRA_ADDRESS = "device_address";
@@ -35,12 +42,20 @@ public class DeviceList extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setContentView(R.layout.activity_main_device_list);
 
-        btConecta = (Button) findViewById(R.id.button);
-        listaDispositivos = (ListView) findViewById(R.id.listView);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+
+        btConecta = (Button) findViewById(R.id.conectar);
+        btBuscar = (Button) findViewById(R.id.buscar);
+        comboBox = (Spinner) findViewById(R.id.spinner);
+
+
+        //listaDispositivos = (ListView) findViewById(R.id.listView);
 
         myBluetooth = BluetoothAdapter.getDefaultAdapter();
         if(myBluetooth == null){
@@ -56,46 +71,50 @@ public class DeviceList extends AppCompatActivity {
         btConecta.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Spinner spinner = (Spinner) findViewById(R.id.spinner);
+                BluetoothDevice bluetoothDevice = (BluetoothDevice) spinner.getSelectedItem();
+                if(bluetoothDevice != null){
+                    Intent intent = new Intent(DeviceList.this, FluxoBluetooth.class);
+                    intent.putExtra(EXTRA_ADDRESS, bluetoothDevice.getAddress());
+                    startActivity(intent);
+                }else
+                    Toast.makeText(getApplicationContext(), "Dispositivo não selecionado", Toast.LENGTH_LONG).show();
+            }
+        });
+        btBuscar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
                 pairedDevicesList();
             }
         });
-
     }
 
     private void pairedDevicesList(){
         pairedDevices = myBluetooth.getBondedDevices();
-        ArrayList list = new ArrayList();
+        List<BluetoothDevice> list = new ArrayList<BluetoothDevice>();
 
         if (pairedDevices.size()>0)
         {
             for(BluetoothDevice bt : pairedDevices)
             {
-                list.add(bt.getName() + "\n" + bt.getAddress()); //Get the device's name and the address
+                list.add(bt); //Get the device's name and the address
             }
         }
         else
         {
             Toast.makeText(getApplicationContext(), "Nenhum dispositivo encontrado", Toast.LENGTH_LONG).show();
         }
-
-        final ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
-        listaDispositivos.setAdapter(adapter);
-        listaDispositivos.setOnItemClickListener(myListClickListener); //Method called when the device from the list is clicked
+        //ArrayAdapter<CharSequence> adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, list);
+        ConexaoBluetoothAdapter adapter = new ConexaoBluetoothAdapter(this,list);
+        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        comboBox.setAdapter(adapter);
+        //ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
+        //listaDispositivos.setAdapter(adapter);
+        //listaDispositivos.setOnItemClickListener(myListClickListener); //Method called when the device from the list is clicked
 
 
     }
 
-    private AdapterView.OnItemClickListener myListClickListener = new AdapterView.OnItemClickListener(){
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-          String info = ((TextView) view).getText().toString();
-          String address = info.substring(info.length() - 17);
-
-          Intent intent = new Intent(DeviceList.this, FluxoBluetooth.class);
-          intent.putExtra(EXTRA_ADDRESS,address);
-          startActivity(intent);
-        }
-    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -1,7 +1,9 @@
 <resources>
-    <string name="app_name">Multimetro</string>
+    <string name="app_name">SMGE</string>
     <string name="action_settings">Settings</string>
     <string name="valeuText">Dispositivos</string>
     <string name="Botao">Conectar</string>
-    <string name="title_activity_fluxo_bluetooth">FluxoBluetooth</string>
+    <string name="titulo_main">SMGE</string>
+    <string name="conect">Conectar</string>
+    <string name="Buscar">Buscar Dispositivos</string>
 </resources>

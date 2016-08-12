@@ -9,28 +9,70 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="ifba.multimetro.activity.FluxoBluetooth">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
 
-    <Button
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ligar/Desligar"
-        android:id="@+id/button2"
-        android:layout_alignParentBottom="true"
+        android:id="@+id/ohm"
+        android:src="@drawable/ohm"
+        android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="179dp" />
+        android:layout_marginTop="70dp"
+        android:layout_toStartOf="@+id/corrente"
 
-    <EditText
+        />
+
+
+    <ImageView
         android:layout_width="wrap_content"
-        android:layout_height="100dp"
-        android:inputType="textMultiLine"
-        android:ems="10"
-        android:id="@+id/editText"
-        android:layout_marginTop="118dp"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentStart="true" />
+        android:layout_height="wrap_content"
+        android:src="@drawable/corrente"
+        android:id="@+id/corrente"
+        android:layout_alignTop="@+id/ohm"
+        android:layout_toStartOf="@+id/tensao"
+
+        />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/tensao"
+        android:id="@+id/tensao"
+        android:layout_above="@+id/leitura"
+        android:layout_alignParentEnd="true"
+
+        />
+
+
+
+    <TextView
+        android:layout_width="550px"
+        android:layout_height="170px"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="0.0000"
+        android:id="@+id/leitura"
+        android:layout_marginTop="55dp"
+        android:typeface="serif"
+        android:textStyle="bold"
+        android:textSize="70sp"
+        android:maxLines="1"
+        android:layout_below="@+id/ohm"
+        android:layout_marginLeft="5dp" />
+
+    <TextView
+        android:layout_width="95dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="A"
+        android:id="@+id/escala"
+        android:typeface="serif"
+        android:textStyle="bold"
+        android:textSize="50sp"
+        android:maxLines="1"
+        android:layout_alignBottom="@+id/leitura"
+        android:layout_marginLeft="265dp"
+        android:textColor="@color/vermelho"
+
+        />
 
 </RelativeLayout>
