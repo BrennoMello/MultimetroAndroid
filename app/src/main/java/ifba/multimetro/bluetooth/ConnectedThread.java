@@ -2,7 +2,6 @@ package ifba.multimetro.bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothSocket;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -18,7 +17,7 @@ import java.util.Arrays;
 
 import ifba.multimetro.R;
 import ifba.multimetro.util.ConversaoLeituras;
-//import ifba.multimetro.activity.FluxoBluetooth;
+
 
 /**
  * Created by Brenno-Mello on 16/12/2015.
@@ -45,15 +44,11 @@ public class ConnectedThread extends Thread {
         this.activity = activity;
 
 
-        // Get the input and output streams, using temp objects because
-        // member streams are final
         try {
             tmpIn = socket.getInputStream();
             tmpOut = socket.getOutputStream();
         } catch (IOException e) {
-
             Log.v("ERRO ConnectedThread", e.getMessage());
-
         }
 
         mmInStream = tmpIn;
@@ -61,26 +56,22 @@ public class ConnectedThread extends Thread {
     }
 
     public void run() {
-        byte[] buffer;  // buffer store for the stream
-        int bytes=0; // bytes returned from read()
-        //is = new DataInputStream(mmInStream);
 
-        //Charset charset = StandardCharsets.US_ASCII;
-        // Keep listening to the InputStream until an exception occurs
+
+        byte[] buffer;
+        int bytes=0;
+
         while (true) {
             try {
 
 
-
                 int num = mmInStream.available();
-                //Log.i("Dados Leitura", String.valueOf(num));
+
                 buffer = new byte[num];
 
-                // Read from the InputStream
                 bytes = mmInStream.read(buffer, 0, num);
 
                 if(bytes>0) {
-                    //Log.i("Dados Leitura", leitura = new String(buffer));
 
                     int tipoDado = 0;
                     for (int i = 0; i < bytes; i++) {
@@ -98,9 +89,7 @@ public class ConnectedThread extends Thread {
                         if (buffer[i] == '*') {
                             int count = i + 1;
                             while (buffer[count] != '%') {
-                                //leitura.concat(String.valueOf(buffer[count]));
                                 count += 1;
-                                //Log.i("Entrou while", "while");
                             }
                             iniDado = i + 1;
                             fimDado = count;
@@ -117,15 +106,11 @@ public class ConnectedThread extends Thread {
                     tipoLeitura = new String(Arrays.copyOfRange(buffer, tipoDado + 1, tipoDado + 2));
                     float leituraConvertida = ConversaoLeituras.converterLeitura(Float.parseFloat(leitura),tipoLeitura);
                     leitura = String.valueOf(new DecimalFormat("0.0000").format(leituraConvertida));
-                    //tipoLeitura = ConversaoLeituras.getEscalaLeitura();
-
-                    // Send the obtained bytes to the UI activity
-                    //leitura = new String(buffer);
 
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            //textoLog.setText(msg.trim());
+
                             if (leitura.length() > 0) {
                                 TextView textLeitura = (TextView) activity.findViewById(R.id.leitura);
                                 textLeitura.setText(leitura.trim());
@@ -167,13 +152,10 @@ public class ConnectedThread extends Thread {
                 Thread.sleep(1400);
             } catch (Exception e) {
                 e.printStackTrace();
-                //Log.v("ERRO: ",e.getMessage());
-                //break;
             }
         }
     }
 
-    /* Call this from the main activity to send data to the remote device */
     public void write(String bytes) {
         try {
             mmOutStream.write(bytes.toString().getBytes());
@@ -183,7 +165,6 @@ public class ConnectedThread extends Thread {
         }
     }
 
-    /* Call this from the main activity to shutdown the connection */
     public void cancel() {
         try {
             mmSocket.close();

@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class ConectaBluetooth extends AsyncTask<Void,Void,Void> {
 
-    private boolean ConnectSuccess = true; //if it's here, it's almost connected
+    private boolean ConnectSuccess = true;
     private BluetoothSocket btSocket = null;
     private boolean isBtConnected = false;
     private BluetoothAdapter myBluetooth = null;
@@ -33,36 +33,34 @@ public class ConectaBluetooth extends AsyncTask<Void,Void,Void> {
     }
 
     protected void onPreExecute() {
-      progress = ProgressDialog.show(activity, "Conectando...", "Aguarde!!!");  //show a progress dialog
+      progress = ProgressDialog.show(activity, "Conectando...", "Aguarde!");
     }
 
     @Override
-    protected Void doInBackground(Void... devices) //while the progress dialog is shown, the connection is done in background
+    protected Void doInBackground(Void... devices)
     {
         try
         {
             if (getBtSocket() == null || !isBtConnected())
             {
-                myBluetooth = BluetoothAdapter.getDefaultAdapter();//get the mobile bluetooth device
-                BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(getAddress());//connects to the device's address and checks if it's available
-                setBtSocket(dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID));//create a RFCOMM (SPP) connection
+                myBluetooth = BluetoothAdapter.getDefaultAdapter();
+                BluetoothDevice dispositivo = myBluetooth.getRemoteDevice(getAddress());
+                setBtSocket(dispositivo.createInsecureRfcommSocketToServiceRecord(myUUID));
                 BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-                getBtSocket().connect();//start connection
+                getBtSocket().connect();
             }
         }
         catch (IOException e)
         {
-            //msg("Erro ao conectar "+e.getMessage());
             Log.v("ERRO conecta bluetooth", e.getMessage());
-            ConnectSuccess = false;//if the try failed, you can check the exception here
+            ConnectSuccess = false;
             progress.dismiss();
         }
         return null;
     }
     @Override
-    protected void onPostExecute(Void result) //after the doInBackground, it checks if everything went fine
+    protected void onPostExecute(Void result)
     {
-        //super.onPostExecute(result);
 
         if (!ConnectSuccess)
         {
@@ -81,7 +79,7 @@ public class ConectaBluetooth extends AsyncTask<Void,Void,Void> {
 
     }
 
-    // fast way to call Toast
+
     private void msg(String s)
     {
         Toast.makeText(this.activity.getApplicationContext(), s, Toast.LENGTH_LONG).show();

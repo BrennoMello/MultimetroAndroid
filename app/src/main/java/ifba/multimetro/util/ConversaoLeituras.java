@@ -10,18 +10,31 @@ public class ConversaoLeituras {
     public static float converterLeitura(float leitura, String tipo){
         switch (tipo){
             case "T":
-                if(leitura<1 || leitura>-1){
+                if(leitura<0){
+                    if(leitura>-1){
+                        leitura *= 1000;
+                        setEscalaLeitura("mV");
+                    }else
+                        setEscalaLeitura("V");
+                }else if(leitura<1){
                     leitura *= 1000;
                     setEscalaLeitura("mV");
                 }else
                     setEscalaLeitura("V");
+
             break;
             case "C":
-                if(leitura<1 || leitura>-1){
-                    leitura *= 1000;
-                    setEscalaLeitura("mA");
+                if(leitura<0) {
+                    if (leitura>-1) {
+                        leitura *= 1000;
+                        setEscalaLeitura("mA");
+                    } else
+                        setEscalaLeitura("A");
+                }else if(leitura<1){
+                        leitura *= 1000;
+                        setEscalaLeitura("mA");
                 }else
-                    setEscalaLeitura("A");
+                        setEscalaLeitura("A");
             break;
             case "R":
                 if(leitura>=1000){

@@ -1,25 +1,17 @@
 package ifba.multimetro.activity;
 
-import android.app.Activity;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -34,7 +26,6 @@ public class DeviceList extends AppCompatActivity {
     private Button btConecta;
     private Button btBuscar;
     private Spinner comboBox;
-    //ListView listaDispositivos;
     private BluetoothAdapter myBluetooth = null;
     private Set<BluetoothDevice> pairedDevices;
     public static String EXTRA_ADDRESS = "device_address";
@@ -47,23 +38,18 @@ public class DeviceList extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
 
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-
         btConecta = (Button) findViewById(R.id.conectar);
         btBuscar = (Button) findViewById(R.id.buscar);
         comboBox = (Spinner) findViewById(R.id.spinner);
 
 
-        //listaDispositivos = (ListView) findViewById(R.id.listView);
-
         myBluetooth = BluetoothAdapter.getDefaultAdapter();
         if(myBluetooth == null){
+
             Toast.makeText(getApplicationContext(), "Não existe suporte para bluetooth", Toast.LENGTH_LONG).show();
             finish();
         }else if(!myBluetooth.isEnabled()){
 
-            //Ask to the user turn the bluetooth on
             Intent turnBTon = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(turnBTon,1);
         }
@@ -97,20 +83,16 @@ public class DeviceList extends AppCompatActivity {
         {
             for(BluetoothDevice bt : pairedDevices)
             {
-                list.add(bt); //Get the device's name and the address
+                list.add(bt);
             }
         }
         else
         {
             Toast.makeText(getApplicationContext(), "Nenhum dispositivo encontrado", Toast.LENGTH_LONG).show();
         }
-        //ArrayAdapter<CharSequence> adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, list);
+
         ConexaoBluetoothAdapter adapter = new ConexaoBluetoothAdapter(this,list);
-        //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         comboBox.setAdapter(adapter);
-        //ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
-        //listaDispositivos.setAdapter(adapter);
-        //listaDispositivos.setOnItemClickListener(myListClickListener); //Method called when the device from the list is clicked
 
 
     }
